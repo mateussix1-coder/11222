@@ -37,6 +37,8 @@ CONFERENCE_FILTER_LABELS = [
     "Divergentes reais",
     "Diferenças dentro da tolerância",
     "Faltantes",
+    "Faltantes no A",
+    "Faltantes no B",
     "OK sem diferença",
 ]
 VISUAL_DIFF_FILTERS = {
@@ -2942,6 +2944,10 @@ def apply_conference_filters(prepared, scope_label, min_diff, search_text, order
         visible = visible[visible["_Status Base"] == "OK por arredondamento"]
     elif scope_label == "Faltantes":
         visible = visible[visible["_Status Base"].isin(["Faltante no A", "Faltante no B"])]
+    elif scope_label == "Faltantes no A":
+        visible = visible[visible["_Status Base"] == "Faltante no A"]
+    elif scope_label == "Faltantes no B":
+        visible = visible[visible["_Status Base"] == "Faltante no B"]
     elif scope_label == "OK sem diferença":
         visible = visible[visible["_Status Base"] == "OK"]
 
