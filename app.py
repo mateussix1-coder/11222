@@ -1700,6 +1700,47 @@ div[data-testid="stProgressBar"] > div > div {
     .fv-wordmark-main { letter-spacing: 0.14em; }
     .processing-grid { grid-template-columns: 1fr; }
 }
+.processing-stage-dot {
+    animation: pulseDot 1.2s ease-in-out infinite;
+}
+
+.processing-title::after {
+    content: "";
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    margin-left: 8px;
+    border-radius: 50%;
+    border: 2px solid #93c5fd;
+    border-top-color: #1d4ed8;
+    animation: spinLoader 0.8s linear infinite;
+    vertical-align: -2px;
+}
+
+.audit-results-shell {
+    touch-action: pan-x pan-y;
+    -webkit-overflow-scrolling: touch;
+}
+
+@keyframes spinLoader {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes pulseDot {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.35); opacity: 0.45; }
+}
+
+@media (max-width: 900px) {
+    .stApp {
+        background: #f4f0e7 !important;
+    }
+    .panel, .summary-card, .processing-shell, .compact-header, [data-testid="stSidebar"] {
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+    }
+}
+
 </style>
 """
 
@@ -2497,6 +2538,47 @@ div[data-testid="stVerticalBlockBorderWrapper"] {
         bottom: 18px;
     }
 }
+.processing-stage-dot {
+    animation: pulseDot 1.2s ease-in-out infinite;
+}
+
+.processing-title::after {
+    content: "";
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    margin-left: 8px;
+    border-radius: 50%;
+    border: 2px solid #93c5fd;
+    border-top-color: #1d4ed8;
+    animation: spinLoader 0.8s linear infinite;
+    vertical-align: -2px;
+}
+
+.audit-results-shell {
+    touch-action: pan-x pan-y;
+    -webkit-overflow-scrolling: touch;
+}
+
+@keyframes spinLoader {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes pulseDot {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.35); opacity: 0.45; }
+}
+
+@media (max-width: 900px) {
+    .stApp {
+        background: #f4f0e7 !important;
+    }
+    .panel, .summary-card, .processing-shell, .compact-header, [data-testid="stSidebar"] {
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+    }
+}
+
 </style>
 """
 
@@ -3084,8 +3166,8 @@ def build_excel_bytes(df, resumo, nome_a, nome_b, tolerancia):
         "OK": PatternFill(fill_type="solid", start_color="DCFCE7", end_color="DCFCE7"),
         "OK Arred.": PatternFill(fill_type="solid", start_color="DBEAFE", end_color="DBEAFE"),
         "Divergente": PatternFill(fill_type="solid", start_color="FEE2E2", end_color="FEE2E2"),
-        "Faltante no A": PatternFill(fill_type="solid", start_color="FEF3C7", end_color="FEF3C7"),
-        "Faltante no B": PatternFill(fill_type="solid", start_color="FEF3C7", end_color="FEF3C7"),
+        "Faltante no A": PatternFill(fill_type="solid", start_color="FFEDD5", end_color="FFEDD5"),
+        "Faltante no B": PatternFill(fill_type="solid", start_color="FFEDD5", end_color="FFEDD5"),
     }
     company_columns = {"Empresa A", "Empresa B", "Dif. Empresa"}
     driver_columns = {"Motorista A", "Motorista B", "Diferença"}
@@ -3196,13 +3278,13 @@ def build_executive_pdf_bytes(df, resumo, nome_a, nome_b, tolerancia):
     from reportlab.lib.pagesizes import A4, landscape
     from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
     from reportlab.lib.units import cm
-    from reportlab.platypus import PageBreak, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+    from reportlab.platypus import PageBreak, LongTable, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
     _, _, divergentes_df, _, faltantes_df, criticos_df = build_export_frames(df, tolerancia)
     summary_rows = [["Métrica", "Valor"]] + build_export_summary_rows(df, resumo, tolerancia)
     criteria_rows = build_export_criteria_rows(nome_a, nome_b, tolerancia)
 
-    def append_table(story, title, frame, columns, widths, empty_message, heading_style, body_style, max_rows=30, new_page=False):
+    def append_table(story, title, frame, columns, widths, empty_message, heading_style, body_style, new_page=False):
         if new_page:
             story.append(PageBreak())
         story.append(Paragraph(title, heading_style))
@@ -3211,31 +3293,35 @@ def build_executive_pdf_bytes(df, resumo, nome_a, nome_b, tolerancia):
             story.append(Paragraph(empty_message, body_style))
             story.append(Spacer(1, 0.35 * cm))
             return
-
-        for start in range(0, len(frame), max_rows):
-            chunk = frame.iloc[start:start + max_rows]
-            data = [columns] + [[str(row[col]) for col in columns] for _, row in chunk.iterrows()]
-            table = Table(data, colWidths=widths, repeatRows=1)
-            table.setStyle(TableStyle([
-                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#10233A")),
-                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                ("FONTSIZE", (0, 0), (-1, -1), 7),
-                ("LEADING", (0, 0), (-1, -1), 8.5),
-                ("GRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#D5DCE6")),
-                ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F8FAFC")]),
-                ("LEFTPADDING", (0, 0), (-1, -1), 5),
-                ("RIGHTPADDING", (0, 0), (-1, -1), 5),
-                ("TOPPADDING", (0, 0), (-1, -1), 4),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-            ]))
-            story.append(table)
-            story.append(Spacer(1, 0.22 * cm))
-            if start + max_rows < len(frame):
-                story.append(PageBreak())
-                story.append(Paragraph(f"{title} (continuação)", heading_style))
-                story.append(Spacer(1, 0.18 * cm))
+        data = [columns] + [[str(row[col]) for col in columns] for _, row in frame.iterrows()]
+        table = LongTable(data, colWidths=widths, repeatRows=1)
+        style_commands = [
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#10233A")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, -1), 7),
+            ("LEADING", (0, 0), (-1, -1), 8.5),
+            ("GRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#D5DCE6")),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 5),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 5),
+            ("TOPPADDING", (0, 0), (-1, -1), 4),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+        ]
+        status_colors = {
+            "Divergente": colors.HexColor("#FEE2E2"),
+            "Faltante no A": colors.HexColor("#FFEDD5"),
+            "Faltante no B": colors.HexColor("#FFEDD5"),
+            "OK": colors.HexColor("#DCFCE7"),
+            "OK Arred.": colors.HexColor("#DBEAFE"),
+        }
+        for idx, (_, row) in enumerate(frame.iterrows(), start=1):
+            status = str(row.get("Status", ""))
+            row_color = status_colors.get(status, colors.white if idx % 2 else colors.HexColor("#F8FAFC"))
+            style_commands.append(("BACKGROUND", (0, idx), (-1, idx), row_color))
+        table.setStyle(TableStyle(style_commands))
+        story.append(table)
+        story.append(Spacer(1, 0.22 * cm))
 
     buf = io.BytesIO()
     doc = SimpleDocTemplate(
@@ -3303,7 +3389,6 @@ def build_executive_pdf_bytes(df, resumo, nome_a, nome_b, tolerancia):
         "Nenhum CTE crítico encontrado.",
         heading_style,
         body_style,
-        max_rows=26,
     )
     append_table(
         story,
@@ -3314,7 +3399,6 @@ def build_executive_pdf_bytes(df, resumo, nome_a, nome_b, tolerancia):
         "Nenhuma divergência real encontrada.",
         heading_style,
         body_style,
-        max_rows=26,
         new_page=True,
     )
     append_table(
@@ -3326,7 +3410,6 @@ def build_executive_pdf_bytes(df, resumo, nome_a, nome_b, tolerancia):
         "Nenhum faltante encontrado.",
         heading_style,
         body_style,
-        max_rows=26,
         new_page=True,
     )
 
@@ -3343,13 +3426,13 @@ def build_detailed_pdf_bytes(df, resumo, nome_a, nome_b, tolerancia):
     from reportlab.lib.pagesizes import A4, landscape
     from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
     from reportlab.lib.units import cm
-    from reportlab.platypus import PageBreak, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+    from reportlab.platypus import PageBreak, LongTable, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
     _, display_df, _, tolerancia_df, faltantes, criticos = build_export_frames(df, tolerancia)
     summary_rows = [["Métrica", "Valor"]] + build_export_summary_rows(df, resumo, tolerancia)
     criteria_rows = build_export_criteria_rows(nome_a, nome_b, tolerancia)
 
-    def append_table(story, title, frame, columns, widths, empty_message, heading_style, body_style, max_rows=45, new_page=False):
+    def append_table(story, title, frame, columns, widths, empty_message, heading_style, body_style, new_page=False):
         if new_page:
             story.append(PageBreak())
         story.append(Paragraph(title, heading_style))
@@ -3359,30 +3442,35 @@ def build_detailed_pdf_bytes(df, resumo, nome_a, nome_b, tolerancia):
             story.append(Spacer(1, 0.35 * cm))
             return
 
-        for start in range(0, len(frame), max_rows):
-            chunk = frame.iloc[start:start + max_rows]
-            data = [columns] + [[str(row[col]) for col in columns] for _, row in chunk.iterrows()]
-            table = Table(data, colWidths=widths, repeatRows=1)
-            table.setStyle(TableStyle([
-                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#10233A")),
-                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                ("FONTSIZE", (0, 0), (-1, -1), 7),
-                ("LEADING", (0, 0), (-1, -1), 8.5),
-                ("GRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#D5DCE6")),
-                ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F8FAFC")]),
-                ("LEFTPADDING", (0, 0), (-1, -1), 5),
-                ("RIGHTPADDING", (0, 0), (-1, -1), 5),
-                ("TOPPADDING", (0, 0), (-1, -1), 4),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-            ]))
-            story.append(table)
-            story.append(Spacer(1, 0.22 * cm))
-            if start + max_rows < len(frame):
-                story.append(PageBreak())
-                story.append(Paragraph(f"{title} (continuação)", heading_style))
-                story.append(Spacer(1, 0.18 * cm))
+        data = [columns] + [[str(row[col]) for col in columns] for _, row in frame.iterrows()]
+        table = LongTable(data, colWidths=widths, repeatRows=1)
+        style_commands = [
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#10233A")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, -1), 7),
+            ("LEADING", (0, 0), (-1, -1), 8.5),
+            ("GRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#D5DCE6")),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 5),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 5),
+            ("TOPPADDING", (0, 0), (-1, -1), 4),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+        ]
+        status_colors = {
+            "Divergente": colors.HexColor("#FEE2E2"),
+            "Faltante no A": colors.HexColor("#FFEDD5"),
+            "Faltante no B": colors.HexColor("#FFEDD5"),
+            "OK": colors.HexColor("#DCFCE7"),
+            "OK Arred.": colors.HexColor("#DBEAFE"),
+        }
+        for idx, (_, row) in enumerate(frame.iterrows(), start=1):
+            status = str(row.get("Status", ""))
+            row_color = status_colors.get(status, colors.white if idx % 2 else colors.HexColor("#F8FAFC"))
+            style_commands.append(("BACKGROUND", (0, idx), (-1, idx), row_color))
+        table.setStyle(TableStyle(style_commands))
+        story.append(table)
+        story.append(Spacer(1, 0.22 * cm))
 
     buf = io.BytesIO()
     doc = SimpleDocTemplate(
@@ -3451,7 +3539,6 @@ def build_detailed_pdf_bytes(df, resumo, nome_a, nome_b, tolerancia):
         "Nenhum CTE crítico encontrado.",
         heading_style,
         body_style,
-        max_rows=26,
     )
     append_table(
         story,
@@ -3462,7 +3549,6 @@ def build_detailed_pdf_bytes(df, resumo, nome_a, nome_b, tolerancia):
         "Nenhuma diferença dentro da tolerância encontrada.",
         heading_style,
         body_style,
-        max_rows=26,
         new_page=True,
     )
     append_table(
@@ -3474,7 +3560,6 @@ def build_detailed_pdf_bytes(df, resumo, nome_a, nome_b, tolerancia):
         "Nenhum faltante encontrado.",
         heading_style,
         body_style,
-        max_rows=26,
         new_page=True,
     )
     append_table(
@@ -3486,7 +3571,6 @@ def build_detailed_pdf_bytes(df, resumo, nome_a, nome_b, tolerancia):
         "Nenhum registro disponível para conferência.",
         heading_style,
         body_style,
-        max_rows=26,
         new_page=True,
     )
 
@@ -3774,8 +3858,8 @@ def status_style(value):
         "OK": "background-color:#dcfce7;color:#166534;font-weight:800;border-radius:99px;",
         "OK Arred.": "background-color:#e8f3ff;color:#075985;font-weight:800;border-radius:99px;",
         "Divergente": "background-color:#fee2e2;color:#991b1b;font-weight:800;border-radius:99px;",
-        "Faltante no A": "background-color:#fef3c7;color:#92400e;font-weight:800;border-radius:99px;",
-        "Faltante no B": "background-color:#fef3c7;color:#92400e;font-weight:800;border-radius:99px;",
+        "Faltante no A": "background-color:#ffedd5;color:#9a3412;font-weight:800;border-radius:99px;",
+        "Faltante no B": "background-color:#ffedd5;color:#9a3412;font-weight:800;border-radius:99px;",
     }
     return styles.get(value, "")
 
@@ -3883,7 +3967,7 @@ def render_table(df):
         if not row_html:
             row_html.append(f'<tr><td class="cell-empty" colspan="{len(visible.columns)}">Nenhum registro encontrado com os filtros atuais.</td></tr>')
 
-        table_html = '<div class="table-shell audit-results-shell"><table class="audit-table">' + f'<thead><tr>{header_html}</tr></thead>' + f'<tbody>{"".join(row_html)}</tbody></table></div>' + '<div class="table-scroll-hint">Use a roda do mouse sobre a tabela para rolar sem descer a página inteira.</div>'
+        table_html = '<div class="table-shell audit-results-shell"><table class="audit-table">' + f'<thead><tr>{header_html}</tr></thead>' + f'<tbody>{"".join(row_html)}</tbody></table></div>' + '<div class="table-scroll-hint">No celular, arraste dentro da tabela para rolar horizontal e vertical sem travar a página.</div>'
         st.markdown(table_html, unsafe_allow_html=True)
 def render_history_page():
     render_topbar("Histórico")
@@ -4764,4 +4848,3 @@ elif page == "Novidades":
     render_news_page()
 
 render_footer()
-
