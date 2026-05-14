@@ -1700,6 +1700,47 @@ div[data-testid="stProgressBar"] > div > div {
     .fv-wordmark-main { letter-spacing: 0.14em; }
     .processing-grid { grid-template-columns: 1fr; }
 }
+.processing-stage-dot {
+    animation: pulseDot 1.2s ease-in-out infinite;
+}
+
+.processing-title::after {
+    content: "";
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    margin-left: 8px;
+    border-radius: 50%;
+    border: 2px solid #93c5fd;
+    border-top-color: #1d4ed8;
+    animation: spinLoader 0.8s linear infinite;
+    vertical-align: -2px;
+}
+
+.audit-results-shell {
+    touch-action: pan-x pan-y;
+    -webkit-overflow-scrolling: touch;
+}
+
+@keyframes spinLoader {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes pulseDot {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.35); opacity: 0.45; }
+}
+
+@media (max-width: 900px) {
+    .stApp {
+        background: #f4f0e7 !important;
+    }
+    .panel, .summary-card, .processing-shell, .compact-header, [data-testid="stSidebar"] {
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+    }
+}
+
 </style>
 """
 
@@ -2497,6 +2538,47 @@ div[data-testid="stVerticalBlockBorderWrapper"] {
         bottom: 18px;
     }
 }
+.processing-stage-dot {
+    animation: pulseDot 1.2s ease-in-out infinite;
+}
+
+.processing-title::after {
+    content: "";
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    margin-left: 8px;
+    border-radius: 50%;
+    border: 2px solid #93c5fd;
+    border-top-color: #1d4ed8;
+    animation: spinLoader 0.8s linear infinite;
+    vertical-align: -2px;
+}
+
+.audit-results-shell {
+    touch-action: pan-x pan-y;
+    -webkit-overflow-scrolling: touch;
+}
+
+@keyframes spinLoader {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes pulseDot {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.35); opacity: 0.45; }
+}
+
+@media (max-width: 900px) {
+    .stApp {
+        background: #f4f0e7 !important;
+    }
+    .panel, .summary-card, .processing-shell, .compact-header, [data-testid="stSidebar"] {
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+    }
+}
+
 </style>
 """
 
@@ -3084,8 +3166,8 @@ def build_excel_bytes(df, resumo, nome_a, nome_b, tolerancia):
         "OK": PatternFill(fill_type="solid", start_color="DCFCE7", end_color="DCFCE7"),
         "OK Arred.": PatternFill(fill_type="solid", start_color="DBEAFE", end_color="DBEAFE"),
         "Divergente": PatternFill(fill_type="solid", start_color="FEE2E2", end_color="FEE2E2"),
-        "Faltante no A": PatternFill(fill_type="solid", start_color="FEF3C7", end_color="FEF3C7"),
-        "Faltante no B": PatternFill(fill_type="solid", start_color="FEF3C7", end_color="FEF3C7"),
+        "Faltante no A": PatternFill(fill_type="solid", start_color="FFEDD5", end_color="FFEDD5"),
+        "Faltante no B": PatternFill(fill_type="solid", start_color="FFEDD5", end_color="FFEDD5"),
     }
     company_columns = {"Empresa A", "Empresa B", "Dif. Empresa"}
     driver_columns = {"Motorista A", "Motorista B", "Diferença"}
@@ -3774,8 +3856,8 @@ def status_style(value):
         "OK": "background-color:#dcfce7;color:#166534;font-weight:800;border-radius:99px;",
         "OK Arred.": "background-color:#e8f3ff;color:#075985;font-weight:800;border-radius:99px;",
         "Divergente": "background-color:#fee2e2;color:#991b1b;font-weight:800;border-radius:99px;",
-        "Faltante no A": "background-color:#fef3c7;color:#92400e;font-weight:800;border-radius:99px;",
-        "Faltante no B": "background-color:#fef3c7;color:#92400e;font-weight:800;border-radius:99px;",
+        "Faltante no A": "background-color:#ffedd5;color:#9a3412;font-weight:800;border-radius:99px;",
+        "Faltante no B": "background-color:#ffedd5;color:#9a3412;font-weight:800;border-radius:99px;",
     }
     return styles.get(value, "")
 
@@ -3883,7 +3965,7 @@ def render_table(df):
         if not row_html:
             row_html.append(f'<tr><td class="cell-empty" colspan="{len(visible.columns)}">Nenhum registro encontrado com os filtros atuais.</td></tr>')
 
-        table_html = '<div class="table-shell audit-results-shell"><table class="audit-table">' + f'<thead><tr>{header_html}</tr></thead>' + f'<tbody>{"".join(row_html)}</tbody></table></div>' + '<div class="table-scroll-hint">Use a roda do mouse sobre a tabela para rolar sem descer a página inteira.</div>'
+        table_html = '<div class="table-shell audit-results-shell"><table class="audit-table">' + f'<thead><tr>{header_html}</tr></thead>' + f'<tbody>{"".join(row_html)}</tbody></table></div>' + '<div class="table-scroll-hint">No celular, arraste dentro da tabela para rolar horizontal e vertical sem travar a página.</div>'
         st.markdown(table_html, unsafe_allow_html=True)
 def render_history_page():
     render_topbar("Histórico")
