@@ -277,10 +277,11 @@ def _extrair_gw_linha_unica(linhas_pdf) -> Dict[str, Dict[str, Any]]:
 
         valores = MONEY_RE.findall(linha)
 
-        if len(valores) < 5:
+        if len(valores) < 3:
             continue
 
-        empresa_b = parse_money_br(valores[4])
+        # Empresa B usa "Valor frete" do GW. Não usar "Frete tab." porque pode vir líquido/descontado por impostos.
+        empresa_b = parse_money_br(valores[1])
         motorista_b = parse_money_br(valores[-3])
 
         if empresa_b is None or motorista_b is None:
@@ -332,7 +333,8 @@ def _finalizar_bloco_gw(registros, bloco):
 
     registros[cte] = {
         "cte": cte,
-        "empresa": valores_antes_cte[0],
+        # Empresa B usa "Valor frete" do GW. Não usar "Frete tab." porque pode vir líquido/descontado por impostos.
+        "empresa": valores_antes_cte[1],
         "motorista": valores_antes_cte[-1],
         "pagina": pagina_cte,
         "margem": None,
